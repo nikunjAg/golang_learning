@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 )
 
 func ReadFileByLine(filename string) []string {
@@ -18,6 +19,8 @@ func ReadFileByLine(filename string) []string {
 		return lines
 	}
 
+	defer file.Close()
+
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
@@ -28,11 +31,11 @@ func ReadFileByLine(filename string) []string {
 
 	if err != nil {
 		fmt.Println("reading the file content failed", err)
-		file.Close()
+		// file.Close()
 		return lines
 	}
 
-	file.Close()
+	// file.Close()
 	return lines
 }
 
@@ -44,14 +47,18 @@ func WriteJSONToFile(path string, data any) error {
 		return errors.New("unable to write to file")
 	}
 
+	defer file.Close()
+
+	time.Sleep(3 * time.Second)
+
 	encoder := json.NewEncoder(file)
 	err = encoder.Encode(data)
 
 	if err != nil {
-		file.Close()
+		// file.Close()
 		return errors.New("failed to convert data to JSON")
 	}
 
-	file.Close()
+	// file.Close()
 	return nil
 }

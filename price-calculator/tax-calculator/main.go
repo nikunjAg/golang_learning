@@ -1,6 +1,7 @@
 package taxcalculator
 
 import (
+	"errors"
 	"fmt"
 	"math"
 
@@ -38,7 +39,20 @@ func (tr *TaxRate) DisplayTaxedPrices() {
 	fmt.Printf("%.2f\t:%#v\n", tr.Rate, tr.TaxedPrices)
 }
 
-func (tr *TaxRate) SaveToFile() error {
+func (tr *TaxRate) SaveToFile(channel chan bool, err_channel chan error) {
 	fileName := fmt.Sprintf("result_%v.json", math.Round(tr.Rate*100))
-	return utils.WriteJSONToFile(fileName, tr)
+
+	if tr.Rate == 0.07 {
+		err_channel <- errors.New("Unable to calculate tax Rate")
+		return
+	}
+
+	err := utils.WriteJSONToFile(fileName, tr)
+
+	if err != nil {
+		err_channel <- err
+		return
+	}
+
+	channel <- true
 }
