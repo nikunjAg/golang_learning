@@ -28,36 +28,6 @@ func NewEvent(name, description, location string, price float64, userId int64) *
 	}
 }
 
-func GetAllEvents() ([]Event, error) {
-	query := "SELECT * FROM events"
-
-	rows, err := db.DB.Query(query)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	var events = []Event{}
-
-	for rows.Next() {
-		var event Event
-		var date_time []uint8
-		err = rows.Scan(&event.Id, &event.Name, &event.Description, &event.Location, &event.Price, &date_time, &event.UserId)
-
-		event.DateTime = string(date_time)
-
-		if err != nil {
-			return nil, err
-		}
-
-		events = append(events, event)
-	}
-
-	return events, nil
-}
-
 func (event *Event) Save() error {
 	query := `
 		INSERT INTO events(name, description, location, price, user_id)
@@ -82,4 +52,57 @@ func (event *Event) Save() error {
 	event.Id = id
 
 	return err
+}
+
+func scanEvent(row db.DB_ROW) (*Event, error) {
+
+	var event Event
+	var date_time []uint8
+
+	err := row.Scan(&event.Id, &event.Name, &event.Description, &event.Location, &event.Price, &date_time, &event.UserId)
+
+	event.DateTime = string(date_time)
+
+	return &event, err
+}
+
+func GetAllEvents() ([]*Event, error) {
+	query := "SELECT * FROM events"
+
+	rows, err := db.DB.Query(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var events = []*Event{}
+
+	for rows.Next() {
+		event, err := scanEvent(rows)
+
+		if err != nil {
+			return nil, err
+		}
+
+		events = append(events, event)
+	}
+
+	return events, nil
+}
+
+func GetEventById(eventId int64) (*Event, error) {
+
+	query := "SELECT * FROM events WHERE id=?"
+
+	row := db.DB.QueryRow(query, eventId)
+
+	event, err := scanEvent(row)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return event, nil
 }

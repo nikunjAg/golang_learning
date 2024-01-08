@@ -10,6 +10,10 @@ import (
 
 var DB *sql.DB
 
+type DB_ROW interface {
+	Scan(...any) error
+}
+
 const (
 	DRIVER_NAME = "mysql"
 	DB_USER     = "nikunj"
