@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 
 	"example.com/events-app/db"
@@ -105,4 +106,62 @@ func GetEventById(eventId int64) (*Event, error) {
 	}
 
 	return event, nil
+}
+
+func UpdateEventById(eventId int64, event *Event) error {
+
+	query := `
+		UPDATE events
+		SET name=?, description=?, location=?, price=?, user_id=?
+		WHERE id=?
+	`
+
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	sql_res, err := stmt.Exec(event.Name, event.Description, event.Location, event.Price, 3, eventId)
+
+	if err != nil {
+		return err
+	}
+
+	rows, err := sql_res.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return errors.New("no such event found")
+	}
+
+	return nil
+}
+
+func DeleteEventById(eventId int64) error {
+	query := "DELETE FROM events WHERE id=?"
+
+	sql_res, err := db.DB.Exec(query, eventId)
+
+	if err != nil {
+		return err
+	}
+
+	rows, err := sql_res.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return errors.New("no such event found")
+	}
+
+	return nil
+
 }

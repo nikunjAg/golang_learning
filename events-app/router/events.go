@@ -93,3 +93,72 @@ func getEventById(context *gin.Context) {
 		"event":   event,
 	})
 }
+
+func updateEventById(context *gin.Context) {
+	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	var event *models.Event
+	err = context.ShouldBindJSON(&event)
+
+	if err != nil {
+		fmt.Println(err)
+		context.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "unable to parse the data",
+		})
+		return
+	}
+
+	event.Id = eventId
+	err = models.UpdateEventById(eventId, event)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "event updated successfully",
+	})
+
+}
+
+func deleteEventById(context *gin.Context) {
+	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	err = models.DeleteEventById(eventId)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "event deleted successfully",
+	})
+
+}
