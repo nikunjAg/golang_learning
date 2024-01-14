@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+
 	"example.com/events-app/db"
 	"example.com/events-app/utils"
 )
@@ -50,4 +52,30 @@ func (user *User) Save() error {
 	user.Id = id
 
 	return err
+}
+
+func (user *User) Login() error {
+
+	query := `
+		SELECT password
+		FROM users
+		WHERE email=?
+	`
+
+	sql_row := db.DB.QueryRow(query, user.Email)
+
+	var hashedPassword string
+	err := sql_row.Scan(&hashedPassword)
+
+	if err != nil {
+		return err
+	}
+
+	res := utils.ComparePassword(hashedPassword, user.Password)
+
+	if !res {
+		return errors.New("credentails mismatched")
+	}
+
+	return nil
 }
