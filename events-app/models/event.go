@@ -19,7 +19,6 @@ type Event struct {
 
 func NewEvent(name, description, location string, price float64, userId int64) *Event {
 	return &Event{
-		Id:          1,
 		Name:        name,
 		Description: description,
 		Location:    location,

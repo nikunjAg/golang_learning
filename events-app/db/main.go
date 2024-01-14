@@ -22,25 +22,43 @@ const (
 	DB_NAME     = "my_events"
 )
 
-func createTables() {
+func createTables() error {
+
+	createUsersTable := `
+		CREATE TABLE IF NOT EXISTS users (
+			id int(12) AUTO_INCREMENT,
+			email varchar(300) NOT NULL UNIQUE,
+			password TEXT NOT NULL,
+			created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			CONSTRAINT uk_users_email UNIQUE KEY(email)
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+	`
+
+	_, err := DB.Exec(createUsersTable)
+
+	if err != nil {
+		return err
+	}
+
 	createEventsTable := `
 		CREATE TABLE IF NOT EXISTS events (
-			id int(12) PRIMARY KEY AUTO_INCREMENT,
+			id int(12) AUTO_INCREMENT,
 			name TEXT NOT NULL,
 			description TEXT NOT NULL,
 			location TEXT NOT NULL,
 			price DECIMAL(10, 2) NOT NULL,
 			date_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			user_id int(11) NOT NULL
-		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+			user_id int(11),
+			PRIMARY KEY (id),
+			CONSTRAINT fk_events_user_id FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 	`
 
-	_, err := DB.Exec(createEventsTable)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	_, err = DB.Exec(createEventsTable)
 
+	return err
 }
 
 func InitDB() (*sql.DB, error) {
@@ -63,7 +81,7 @@ func InitDB() (*sql.DB, error) {
 	DB.SetMaxIdleConns(10)
 	DB.SetConnMaxLifetime(time.Minute * 3)
 
-	createTables()
+	err = createTables()
 
-	return DB, nil
+	return DB, err
 }
