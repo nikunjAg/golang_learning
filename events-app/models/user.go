@@ -57,15 +57,16 @@ func (user *User) Save() error {
 func (user *User) Login() error {
 
 	query := `
-		SELECT password
+		SELECT id, password
 		FROM users
 		WHERE email=?
 	`
 
 	sql_row := db.DB.QueryRow(query, user.Email)
 
+	var userId int64
 	var hashedPassword string
-	err := sql_row.Scan(&hashedPassword)
+	err := sql_row.Scan(&userId, &hashedPassword)
 
 	if err != nil {
 		return err
@@ -76,6 +77,8 @@ func (user *User) Login() error {
 	if !res {
 		return errors.New("credentails mismatched")
 	}
+
+	user.Id = userId
 
 	return nil
 }

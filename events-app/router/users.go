@@ -1,9 +1,11 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 
 	"example.com/events-app/models"
+	"example.com/events-app/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -59,9 +61,21 @@ func loginUser(context *gin.Context) {
 		return
 	}
 
+	token, err := utils.GenerateToken(user.Id, user.Email)
+
+	if err != nil {
+		fmt.Println(err)
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "unable to login user",
+		})
+		return
+	}
+
 	context.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "Logged in successfully",
+		"token":   token,
 	})
 
 }
