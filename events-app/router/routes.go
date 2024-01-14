@@ -1,15 +1,24 @@
 package router
 
-import "github.com/gin-gonic/gin"
+import (
+	"example.com/events-app/middlewares"
+	"github.com/gin-gonic/gin"
+)
 
 func InitRoutes(server *gin.Engine) {
 
+	// Authenticated Group
+	authenticatedGroup := server.Group("/")
+	authenticatedGroup.Use(middlewares.ValidateToken)
+
 	// Events routes
 	server.GET("/events", getEvents)
-	server.POST("/events", createEvent)
 	server.GET("/events/:id", getEventById)
-	server.PUT("/events/:id", updateEventById)
-	server.DELETE("/events/:id", deleteEventById)
+
+	// AuthRequired Event Routes
+	authenticatedGroup.POST("/events", createEvent)
+	authenticatedGroup.PUT("/events/:id", updateEventById)
+	authenticatedGroup.DELETE("/events/:id", deleteEventById)
 
 	// Users routes
 	server.POST("/users/signup", createUser)

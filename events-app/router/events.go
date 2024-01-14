@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"example.com/events-app/models"
+	"example.com/events-app/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -46,7 +47,17 @@ func createEvent(context *gin.Context) {
 		return
 	}
 
-	event.UserId = 2
+	user_claims, ok := context.Keys["user_id"].(*utils.UserClaims)
+	if !ok {
+		fmt.Printf("Unable to parse UserClaims from context got : %v\n", context.Keys["user_id"])
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": "Something went wrong!",
+		})
+		return
+	}
+
+	event.UserId = user_claims.UserId
 	err = event.Save()
 
 	if err != nil {
