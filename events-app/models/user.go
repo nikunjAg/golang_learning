@@ -8,9 +8,9 @@ import (
 )
 
 type User struct {
-	Id       int64
-	Email    string `binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Id       int64  `json:"id"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password,omitempty" binding:"required"`
 }
 
 func NewUser(Email, Password string) *User {

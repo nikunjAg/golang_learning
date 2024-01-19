@@ -23,4 +23,9 @@ func InitRoutes(server *gin.Engine) {
 	// Users routes
 	server.POST("/users/signup", createUser)
 	server.POST("/users/login", loginUser)
+
+	// Registrations Routes
+	authenticatedGroup.GET("/events/:id/register", getAllRegistrationsForEvent)
+	authenticatedGroup.POST("/events/:id/register", registerForEvent)
+	authenticatedGroup.DELETE("/events/:id/register", removeRegistrationForEvent)
 }

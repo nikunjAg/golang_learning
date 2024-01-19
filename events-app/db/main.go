@@ -58,6 +58,25 @@ func createTables() error {
 
 	_, err = DB.Exec(createEventsTable)
 
+	if err != nil {
+		return err
+	}
+
+	createRegistrationsTable := `
+		CREATE TABLE IF NOT EXISTS registrations (
+			id int(12) AUTO_INCREMENT NOT NULL,
+			user_id int(12) NOT NULL,
+			event_id int(12) NOT NULL,
+			created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY(id),
+			CONSTRAINT uk_registrations_user_id_event_id UNIQUE KEY (user_id, event_id),
+			CONSTRAINT fk_registrations_user_id FOREIGN KEY (user_id) REFERENCES users(id),
+			CONSTRAINT fk_registrations_event_id FOREIGN KEY (event_id) REFERENCES events(id)
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=15000;
+	`
+	_, err = DB.Exec(createRegistrationsTable)
+
 	return err
 }
 
