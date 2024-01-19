@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -28,7 +29,7 @@ func ValidateToken(context *gin.Context) {
 		})
 		return
 	}
-
+	fmt.Println(user_claims)
 	context.Set("user_claims", user_claims)
 
 	context.Next()

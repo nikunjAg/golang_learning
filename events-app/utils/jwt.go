@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -56,7 +55,6 @@ func VerifyUserToken(token string) (*UserClaims, error) {
 		return nil, errors.New("invalid token")
 	}
 
-	fmt.Println(jwt_token.Claims)
 	claims, ok := jwt_token.Claims.(*UserClaims)
 
 	if !ok {

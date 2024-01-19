@@ -47,15 +47,7 @@ func createEvent(context *gin.Context) {
 		return
 	}
 
-	user_claims, ok := context.Keys["user_id"].(*utils.UserClaims)
-	if !ok {
-		fmt.Printf("Unable to parse UserClaims from context got : %v\n", context.Keys["user_id"])
-		context.JSON(http.StatusInternalServerError, gin.H{
-			"code":    500,
-			"message": "Something went wrong!",
-		})
-		return
-	}
+	user_claims, _ := context.Keys["user_claims"].(*utils.UserClaims)
 
 	event.UserId = user_claims.UserId
 	err = event.Save()
@@ -116,6 +108,27 @@ func updateEventById(context *gin.Context) {
 		return
 	}
 
+	user_claims, _ := context.Keys["user_claims"].(*utils.UserClaims)
+	user_id := user_claims.UserId
+
+	existing_event, err := models.GetEventById(eventId)
+
+	if err != nil {
+		context.JSON(http.StatusNotFound, gin.H{
+			"code":    404,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	if existing_event.UserId != user_id {
+		context.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "Not authorized to update the event",
+		})
+		return
+	}
+
 	var event *models.Event
 	err = context.ShouldBindJSON(&event)
 
@@ -129,7 +142,7 @@ func updateEventById(context *gin.Context) {
 	}
 
 	event.Id = eventId
-	err = models.UpdateEventById(eventId, event)
+	err = models.UpdateEventById(eventId, user_id, event)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{
@@ -153,6 +166,27 @@ func deleteEventById(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
 			"message": err.Error(),
+		})
+		return
+	}
+
+	user_claims, _ := context.Keys["user_claims"].(*utils.UserClaims)
+	user_id := user_claims.UserId
+
+	existing_event, err := models.GetEventById(eventId)
+
+	if err != nil {
+		context.JSON(http.StatusNotFound, gin.H{
+			"code":    404,
+			"message": err.Error(),
+		})
+		return
+	}
+	fmt.Println(existing_event, user_id)
+	if existing_event.UserId != user_id {
+		context.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "Not authorized to delete the event",
 		})
 		return
 	}
